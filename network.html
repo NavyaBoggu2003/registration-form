@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <style>
+        h1 {
+            color: green;
+        }
+        body {
+            text-align:center;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+            background-image: url("landscape.jpg");
+            background-size:cover ;
+            
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: whitesmoke;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        label {
+            font-weight: bold;
+            display: inline-block;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+        }
+        .form-group input[type="text"],input[type="password"],select {
+            width: 50%;
+            padding: 10px;
+            border: 1px solid green;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .form-group input[type="radio"], input[type="checkbox"] {
+            width:auto;
+            margin-right: 10px;
+        }
+        .form-group .radio-group,.checkbox-group {
+            display: inline-block;
+            margin-top:5px;
+        }
+
+        button[type="submit"], .edit-btn, .delete-btn {
+            width:30%;
+            background-color:green;
+            color: white;
+            padding:10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            gap: 15px;
+            
+        }
+        button[type="submit"]:hover, .edit-btn:hover, .delete-btn:hover {
+            background-color: powderblue;
+            color:green;
+            overflow:hidden;
+        }
+        .edit-btn, .delete-btn {
+            margin:0 10px;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 5px solid rgb(221,221,221);
+        }
+        th {
+            background-color:green;
+            color: white;
+        }
+        td {
+            background-color: rgb(249,249,249);
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            display: block;
+            margin-top: 5px;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registration Form</h1>
+        <form id="RegistrationForm" onsubmit="return handleSubmit()">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Enter name">
+                <span class="error" id="nameerror"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" placeholder="Enter email">
+                <span class="error" id="emailerror"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+                <span class="error" id="passworderror"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Gender</label>
+                <div class="radio-group">
+                    <input type="radio" name="gender" value="Male"> Male
+                    <input type="radio" name="gender" value="Female"> Female
+                    <input type="radio" name="gender" value="Others"> Others
+                </div>
+                <span class="error" id="gendererror"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="number">Contact</label>
+                <input type="text" id="number" placeholder="Contact number">
+                <span class="error" id="contacterror"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="bloodGroup">Select Blood Group</label>
+                <select id="bloodGroup" name="bloodGroup">
+                    <option value="">Select</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+                <span class="error" id="bloodGrouperror"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Languages:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="english" value="English"> English
+                    <input type="checkbox" name="hindi" value="Hindi"> Hindi
+                    <input type="checkbox" name="others" value="Others"> Others
+                </div>
+                <span class="error" id="languageserror"></span>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <table id="data">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Gender</th>
+            <th>Contact</th>
+            <th>Blood Group</th>
+            <th>Languages</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <script>
+        let currentEditIndex = -1;
+
+        function handleSubmit() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
+            const contact = document.getElementById('number').value.trim();
+            const bloodGroup = document.getElementById('bloodGroup').value;
+            const languages = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value);
+
+            clearErrors();
+
+            if (!validateInputs(name, email, password, gender, contact, bloodGroup, languages)) {
+                return false; 
+            }
+
+            const table = document.querySelector('#data tbody');
+            const rowData = `
+                <tr>
+                    <td>${name}</td>
+                    <td>${email}</td>
+                    <td>${password}</td>
+                    <td>${gender}</td>
+                    <td>${contact}</td>
+                    <td>${bloodGroup}</td>
+                    <td>${languages.join(', ')}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editRow(this)">Edit</button>
+                        <button class="delete-btn" onclick="deleteRow(this)">Delete</button>
+                    </td>
+                </tr>
+            `;
+
+            if (currentEditIndex === -1) {
+                table.insertAdjacentHTML('beforeend', rowData);
+                
+            } else {
+                const rows = table.querySelectorAll('tr');
+                rows[currentEditIndex].innerHTML = rowData;
+                currentEditIndex = -1;
+            }
+           document.getElementById('RegistrationForm').reset();
+            return false;
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(error => error.textContent = '');
+        }
+
+        function validateInputs(name, email, password, gender, contact, bloodGroup, languages) {
+            let isValid = true;
+
+            if (name === "") {
+                document.getElementById('nameerror').textContent = "Name is required.";
+                isValid = false;
+            }
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email)) {
+                document.getElementById('emailerror').textContent = "enter  valid email .";
+                isValid = false;
+            }
+            if (password.length < 6) {
+                document.getElementById('passworderror').textContent = "Password must be at least 6 characters.";
+                isValid = false;
+            }
+            if (!gender) {
+                document.getElementById('gendererror').textContent = "Gender is required.";
+                isValid = false;
+            }
+            const contactPattern = /^\d{10}$/;
+            if (!contactPattern.test(contact)) {
+                document.getElementById('contacterror').textContent = " contact number should be 10 digits  only";
+                isValid = false;
+            }
+            if (!bloodGroup) {
+                document.getElementById('bloodGrouperror').textContent = "Select a blood group.";
+                isValid = false;
+            }
+            if (languages.length === 0) {
+                document.getElementById('languageserror').textContent = "Select at least one language.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function editRow(button) {
+            const row = button.closest('tr');
+            const cells = row.querySelectorAll('td');
+
+            document.getElementById('name').value = cells[0].textContent;
+            document.getElementById('email').value = cells[1].textContent;
+            document.getElementById('password').value = cells[2].textContent;
+            document.getElementById('password').type="text";
+            document.querySelector(`input[name="gender"][value="${cells[3].textContent}"]`).checked = true;
+            document.getElementById('number').value = cells[4].textContent;
+            document.getElementById('bloodGroup').value = cells[5].textContent;
+
+            const languages = cells[6].textContent.split(', ');
+            document.querySelectorAll('input[type="checkbox"]').forEach(input => {
+                input.checked = languages.includes(input.value);
+            });
+
+            currentEditIndex = Array.from(row.parentNode.children).indexOf(row);
+        }
+
+        function deleteRow(button) {
+            button.closest('tr').remove();
+        }
+    </script>
+</body>
+</html>
